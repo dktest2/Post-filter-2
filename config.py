@@ -1,9 +1,9 @@
 import os
 
 class Config(object):
-  API_ID = int(os.environ.get("API_ID"))
-  API_HASH = os.environ.get("API_HASH")
-  BOT_TOKEN = os.getenv("BOT_TOKEN")
+  API_ID = int(os.environ.get("API_ID", "8321183"))
+  API_HASH = os.environ.get("API_HASH", "d9102799310e7038de04d9af2679ed68")
+  BOT_TOKEN = os.getenv("BOT_TOKEN", "5775731292:AAGi-Kpz54KDeMqtqFvaR4QIiOeGNRpkI5Y")
   STRINGSESSION = os.environ.get("STRINGSESSION")
   OWNER_ID = int(os.environ.get("OWNER_ID"))
   DATABASE_CHANNELS = os.environ.get("DATABASE_CHANNELS", ["-1001769986368"])
