@@ -22,7 +22,7 @@ from utils import grt, valid_args
 api_id = Config.API_ID
 api_hash = Config.API_HASH
 bot_token = Config.BOT_TOKEN
-bot = TelegramClient("royalfilterbot", api_id, api_hash).start(bot_token=bot_token)
+bot = TelegramClient("filterbot", api_id, api_hash).start(bot_token=bot_token)
 session = Config.STRINGSESSION
 client = TelegramClient(StringSession(session), api_id=api_id, api_hash=api_hash)
 SUBSCRIPTION_TIME = Config.SUBSCRIPTION_TIME * 86400
@@ -501,11 +501,11 @@ async def index(event):
         )
     if event.is_private:
         return await event.reply("This command only works in groups!")
-    if event.text in ["/index", "/indexMsgdelete66bot"]:
+    if event.text in ["/index", f"/index@{Config.BOT_USERNAME}"]:
         return await event.reply("Please give me a channel ID!")
     try:
         channelid = int(
-            event.text.replace("/index ", "").replace("/index@Msgdelete66bot ", "")
+            event.text.replace("/index ", "").replace(f"/index@{Config.BOT_USERNAME} ", "")
         )
     except Exception:
         return await event.reply("This is not a valid Channel ID!")
@@ -582,7 +582,7 @@ async def removeindex(event):
 
 @bot.on(events.NewMessage(pattern="/sub"))
 async def fsub(event):
-    if event.text in ["/suboff", "/suboff@Msgdelete66bot"]:
+    if event.text in ["/suboff", f"/suboff@{Config.BOT_USERNAME}"]:
         return
     if event.is_private:
         return await event.reply("I only work in groups!")
@@ -628,7 +628,7 @@ async def fsub(event):
         "/suboff@RoyalFilterRobot",
     ]:
         return await event.reply("Please give me a channel ID!")
-    args = event.text.replace("/sub ", "").replace("/sub@Msgdelete66bot ", "")
+    args = event.text.replace("/sub ", "").replace(f"/sub@{Config.BOT_USERNAME}", "")
     if is_force_sub(event.chat_id):
         return await event.reply(
             "You have already enabled Force Sub for this group!\nTurn it off by using /sub off"
@@ -969,7 +969,7 @@ async def help(event):
     if not event.is_private:
         return await event.reply(
             "PM me. I will help you there!",
-            buttons=Button.url("PM", "https://t.me/Msgdelete66bot?start=True"),
+            buttons=Button.url("PM", f"https://t.me/{Config.BOT_USERNAME}?start=True"),
         )
     if event.sender_id == Config.OWNER_ID:
         text = f"""**Command For Owners**
@@ -1062,7 +1062,7 @@ async def filter(event):
 **Click The Button To Start Now.👇🏻**"""
             buttons = [
                 Button.url(
-                    "Start in PM", "https://t.me/Msgdelete66bot?start=adduser"
+                    "Start in PM", f"https://t.me/{Config.BOT_USERNAME}?start=adduser"
                 )
             ]
             xx = await event.reply(text, buttons=buttons)
