@@ -82,25 +82,7 @@ User: {event.sender.first_name} - [{event.sender_id}]
 
 **"""
             messages.append(textmessage)
-    if not messages:
-        replytext = f"""**No Results Found For {text}**
-
-**Type Only Movie Name 💬**
-**Check Spelling On Google** 🔍"""
-        buttons = [
-            [
-                Button.url(
-                    "Click To Check Spelling ✅",
-                    f'http://www.google.com/search?q={text.replace(" ", "%20")}%20movie',
-                )
-            ],
-            [
-                Button.url(
-                    "Click To Check Release Date 📅",
-                    f'https://www.google.com/search?q={text.replace(" ", "%20")}%20Movie%20Release%20Date',
-                )
-            ],
-        ]
+    
         try:
             msgg = await event.reply(replytext, buttons=buttons)
             await procmsg.delete()
@@ -166,25 +148,7 @@ Chat: {event.chat.title} - [{event.chat_id}]
 👉 {link}
 **"""
             messages.append(textmessage)
-    if not messages:
-        replytext = f"""**No Results Found For {text}**
-
-**Type Only Movie Name 💬**
-**Check Spelling On Google** 🔍"""
-        buttons = [
-            [
-                Button.url(
-                    "Click To Check Spelling ✅",
-                    f'http://www.google.com/search?q={text.replace(" ", "%20")}%20movie',
-                )
-            ],
-            [
-                Button.url(
-                    "Click To Check Release Date 📅",
-                    f'https://www.google.com/search?q={text.replace(" ", "%20")}%20Movie%20Release%20Date',
-                )
-            ],
-        ]
+    
         try:
             msgg = await event.reply(replytext, buttons=buttons)
             await procmsg.delete()
