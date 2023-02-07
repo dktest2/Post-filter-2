@@ -4,7 +4,7 @@ class Config(object):
   API_ID = int(os.environ.get("API_ID", "8321183"))
   API_HASH = os.environ.get("API_HASH", "d9102799310e7038de04d9af2679ed68")
   BOT_TOKEN = os.getenv("BOT_TOKEN", "5928657017:AAHDknS9PQPkxJ_Ua7ks7mLTQgx6U3Uhocg")
-  STRINGSESSION = os.environ.get("STRINGSESSION", "1BVtsOLwBuyARpm69kZG2xCZCr2MDJHewD1G1V62hXN8i-MyVTShm_upu5Q_LMZi8f8cHWYLtPWhHR2e6bkP80RyBkIsYHMjqaUOegvLqxjSHu36NGlFubmcLNzxURkOQnih0aNXLJhXNCdBqSOLpoKtfUoTWIdCKJpzpZ_VMdLr9RD5izBFu0D8YUSddVKeD2_Z1HGr_BRj-PntgpDWKZeU62-iMjVqZTIP0IoVHucSmzbx6jZFgqQu05yZi201bw6Cinoszynd1Ez8c7p6IrKOSoM5-27nUzi6XhtFDcpfxxIq_Nxc-fEw-LqLJtB3C7L9Vdi1mQTAcEEs5W-T3LPj97OXwTF4=")
+  STRINGSESSION = os.environ.get("STRINGSESSION", "1BVtsOKkBuzRaySMz6D7Gw1XU11O1KjfolOKV-IfR1Dzv2BCvy8cg6ij8EqCQrqY6Ca-anKa3y7whE3QawRgq12E5829iJe7pFYvLkvctD406IsPT-vUIQFptH_z7pceYHLJo_INF_-ZQ05qQfTxytag7ytx-9TBVpLOXwHLR-4USppowQOOoT_781CQEH_ZlYIR40JVQq44Nq9uhs540Teitl9I5BcrFvxvbhlgE_G15TxGdX2g9KGLsgcny9kkHzMnXZelcN12occ3m7ty7Zc66_-bz2fiM60u_P3C-pLqwSaDTX44shCjawcwOb0vMrd-zxffpyBshEiMioRLcMVDkKaHp6M4=")
   OWNER_ID = int(os.environ.get("OWNER_ID", "399726799"))
   DATABASE_CHANNELS = os.environ.get("DATABASE_CHANNELS", ["-1001896983424"])
   DATABASE_URL = os.environ.get("DATABASE_URL", "postgres://vxagnqmn:gKw_gOqVE39Ys7cPQiPvXygnhg4QTUwS@berry.db.elephantsql.com/vxagnqmn")
