@@ -11,7 +11,7 @@ from config import Config
 DB_URI = Config.DATABASE_URL.replace('postgres://', 'postgresql://')
 SUBSCRIPTION_TIME = Config.SUBSCRIPTION_TIME * 86400
 
-
+engine = create_engine(DB_URI, client_encoding="utf8")
 def start() -> scoped_session:
   engine = create_engine(DB_URI, client_encoding="utf8")
   BASE.metadata.bind = engine
@@ -82,11 +82,10 @@ class Controls(BASE):
     self.grpfilter = grpfilter
 
 
-AuthenticatedUsers.__table__.create(checkfirst=True)
-Chats.__table__.create(checkfirst=True)
-Channels.__table__.create(checkfirst=True)
-Controls.__table__.create(checkfirst=True)
-
+AuthenticatedUsers.__table__.create(checkfirst=True, bind=engine)
+Chats.__table__.create(checkfirst=True, bind=engine)
+Channels.__table__.create(checkfirst=True, bind=engine)
+Controls.__table__.create(checkfirst=True, bind=engine)
 
 def is_autodelete():
   try:
