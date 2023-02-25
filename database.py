@@ -1,3 +1,4 @@
+import contextlib
 import os
 import threading
 from sqlalchemy import create_engine
@@ -13,7 +14,7 @@ SUBSCRIPTION_TIME = Config.SUBSCRIPTION_TIME * 86400
 
 engine = create_engine(DB_URI, client_encoding="utf8")
 def start() -> scoped_session:
-  engine = create_engine(DB_URI, client_encoding="utf8")
+  global engine
   BASE.metadata.bind = engine
   BASE.metadata.create_all(engine)
   return scoped_session(sessionmaker(bind=engine, autoflush=False))
@@ -179,14 +180,12 @@ def is_filter_pm():
   try:
     with INSERTION_LOCK:
       code = "global"
-      query = SESSION.query(Controls).get(code)
-      if not query:
-        query = Controls(code, False, False, False)
-        SESSION.add(query)
-        SESSION.commit()
-        return False
-      else:
+      if query := SESSION.query(Controls).get(code):
         return query.filter
+      query = Controls(code, False, False, False)
+      SESSION.add(query)
+      SESSION.commit()
+      return False
   finally:
     SESSION.close()
 
@@ -245,11 +244,10 @@ def connect_channel(chatid, channelid):
       if not chat:
         # chat = Chats(chatid=chatid, ConnectedChannels=f'[{channelid}]')
         return False
-      else:
-        channels = ast.literal_eval(chat.ConnectedChannels)
-        channels.append(channelid)
-        channels = str(channels)
-        chat.ConnectedChannels = channels
+      channels = ast.literal_eval(chat.ConnectedChannels)
+      channels.append(channelid)
+      channels = str(channels)
+      chat.ConnectedChannels = channels
       if not channel:
         channel = Channels(channelid=channelid, chatid=chatid)
       # SESSION.add(chat)
@@ -264,22 +262,25 @@ def disconnect_channel(chatid, channelid):
     with INSERTION_LOCK:
       chat = SESSION.query(Chats).get(chatid)
       channel = SESSION.query(Channels).get(channelid)
-      if not chat:
-        return False
-      else:
-        channels = ast.literal_eval(chat.ConnectedChannels)
-        try:
-          channels.remove(int(channelid))
-        except ValueError:
-          print(traceback.format_exc())
-          return
-        channels = str(channels)
-        chat.ConnectedChannels = channels
-        SESSION.delete(channel)
-        SESSION.commit()
-        return True
+      return (_extracted_from_disconnect_channel_9(chat, channelid, channel)
+              if chat else False)
   finally:
     SESSION.close()
+
+
+# TODO Rename this here and in `disconnect_channel`
+def _extracted_from_disconnect_channel_9(chat, channelid, channel):
+  channels = ast.literal_eval(chat.ConnectedChannels)
+  try:
+    channels.remove(int(channelid))
+  except ValueError:
+    print(traceback.format_exc())
+    return
+  channels = str(channels)
+  chat.ConnectedChannels = channels
+  SESSION.delete(channel)
+  SESSION.commit()
+  return True
 
 
 def add_user(userid, username):
@@ -292,9 +293,8 @@ def add_user(userid, username):
                                   authenticated=False,
                                   time_of_issue=0,
                                   chats='[]')
-      else:
-        if username != user.username:
-          user.username = username
+      elif username != user.username:
+        user.username = username
       SESSION.add(user)
       SESSION.commit()
   finally:
@@ -305,10 +305,7 @@ def is_authenticated(userid):
   try:
     with INSERTION_LOCK:
       user = SESSION.query(AuthenticatedUsers).get(userid)
-      if not user:
-        return False
-      else:
-        return user.authenticated
+      return user.authenticated if user else False
   finally:
     SESSION.close()
 
@@ -317,14 +314,9 @@ def is_valid(userid, time):
   try:
     with INSERTION_LOCK:
       print('validating user')
-      user = SESSION.query(AuthenticatedUsers).get(userid)
-      if not user:
-        print('user doesnt exist')
-        return False
-      else:
+      if user := SESSION.query(AuthenticatedUsers).get(userid):
         if user.authenticated:
-          previoustime = float(user.time_of_issue)
-          calculate = round(time - previoustime)
+          calculate = round(time - float(user.time_of_issue))
           if calculate <= SUBSCRIPTION_TIME:
             print('user is valid')
             return True
@@ -335,6 +327,9 @@ def is_valid(userid, time):
         else:
           print('not authenticated')
           return False
+      else:
+        print('user doesnt exist')
+        return False
   finally:
     SESSION.close()
 
@@ -343,9 +338,7 @@ def get_validity(userid):
   try:
     with INSERTION_LOCK:
       user = SESSION.query(AuthenticatedUsers).get(userid)
-      if not user:
-        return False
-      return float(user.time_of_issue)
+      return float(user.time_of_issue) if user else False
   finally:
     SESSION.close()
 
@@ -381,9 +374,7 @@ def username_to_id(username):
   try:
     user = SESSION.query(AuthenticatedUsers).filter(
       AuthenticatedUsers.username == username).first()
-    if not user:
-      return False
-    return user.userid
+    return user.userid if user else False
   finally:
     SESSION.close()
 
@@ -391,9 +382,7 @@ def username_to_id(username):
 def id_to_username(id):
   try:
     user = SESSION.query(AuthenticatedUsers).get(id)
-    if not user:
-      return 'UnsupportedUser64Bot'
-    return user.username
+    return user.username if user else 'UnsupportedUser64Bot'
   finally:
     SESSION.close()
 
@@ -402,10 +391,7 @@ def get_chats():
   try:
     with INSERTION_LOCK:
       query = SESSION.query(Chats.chatid).filter(Chats.ConnectedChannels != "[]")
-      result = []
-      for row in query:
-        result.append(row[0])
-      return result
+      return [row[0] for row in query]
   finally:
     SESSION.close()
 
@@ -414,10 +400,7 @@ def get_users():
   try:
     with INSERTION_LOCK:
       query = SESSION.query(AuthenticatedUsers.userid).all()
-      result = []
-      for row in query:
-        result.append(row[0])
-      return result
+      return [row[0] for row in query]
   finally:
     SESSION.close()
 
@@ -426,10 +409,7 @@ def get_all_chats():
   try:
     with INSERTION_LOCK:
       query = SESSION.query(Chats.chatid).all()
-      result = []
-      for row in query:
-        result.append(row[0])
-      return result
+      return [row[0] for row in query]
   finally:
     SESSION.close()
 
@@ -438,10 +418,7 @@ def get_cha():
   try:
     with INSERTION_LOCK:
       query = SESSION.query(Channels.channelid).all()
-      result = []
-      for row in query:
-        result.append(row[0])
-      return result
+      return [row[0] for row in query]
   finally:
     SESSION.close()
 
@@ -451,10 +428,7 @@ def get_auth_users():
     with INSERTION_LOCK:
       query = SESSION.query(AuthenticatedUsers.userid).filter(
         AuthenticatedUsers.authenticated == True)
-      result = []
-      for row in query:
-        result.append(row[0])
-      return result
+      return [row[0] for row in query]
   finally:
     SESSION.close()
 
@@ -467,9 +441,7 @@ def get_channels(chatid):
         return False
       channels = query.ConnectedChannels
       channels = ast.literal_eval(channels)
-      if len(channels) == 0:
-        return False
-      return channels
+      return False if len(channels) == 0 else channels
   finally:
     SESSION.close()
 
@@ -478,12 +450,7 @@ def get_all_channels():
   try:
     with INSERTION_LOCK:
       query = SESSION.query(Chats.ConnectedChannels).all()
-      if not query:
-        return False
-      result = []
-      for row in query:
-        result.append(row[0])
-      return result
+      return [row[0] for row in query] if query else False
   finally:
     SESSION.close()
 
@@ -492,10 +459,7 @@ def is_grp_auth(chatid):
   try:
     with INSERTION_LOCK:
       chat = SESSION.query(Chats).get(chatid)
-      if not chat:
-        return False
-      else:
-        return chat.authenticated
+      return chat.authenticated if chat else False
   finally:
     SESSION.close()
 
@@ -539,9 +503,9 @@ def unauth_group(chatid):
   try:
     with INSERTION_LOCK:
       chat = SESSION.query(Chats).get(
-        -chatid if not str(chatid).startswith('-100') else chatid)
-      channels = SESSION.query(Channels).filter(Channels.chatid == (
-        -chatid if not str(chatid).startswith('-100') else chatid)).all()
+          chatid if str(chatid).startswith('-100') else -chatid)
+      channels = (SESSION.query(Channels).filter(Channels.chatid == (
+          chatid if str(chatid).startswith('-100') else -chatid)).all())
       if not chat:
         return False
       if channels:
@@ -552,10 +516,8 @@ def unauth_group(chatid):
       chat.user = 0
       chat.forcesubchannel = 0
       chats = ast.literal_eval(user.chats)
-      try:
+      with contextlib.suppress(Exception):
         chats.remove(chatid)
-      except:
-        pass
       chats = str(chats)
       chat.ConnectedChannels = '[]'
       user.chats = chats
@@ -594,12 +556,9 @@ def disable_force_sub(chatid):
 def is_force_sub(chatid):
   try:
     with INSERTION_LOCK:
-      chat = SESSION.query(Chats).get(chatid)
-      if not chat:
-        return False
-      if chat.forcesubchannel == 0:
-        return False
+      if chat := SESSION.query(Chats).get(chatid):
+        return False if chat.forcesubchannel == 0 else chat.forcesubchannel
       else:
-        return chat.forcesubchannel
+        return False
   finally:
     SESSION.close()
